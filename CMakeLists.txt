@@ -69,7 +69,7 @@ target_compile_features(ccstring_examples PRIVATE c_std_99)
 target_link_libraries(ccstring_examples PRIVATE ccstring)
 
 # Install rules
-install(TARGETS ccstring ccstring_examples 
+install(TARGETS ccstring 
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib/static
