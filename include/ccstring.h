@@ -57,7 +57,7 @@ extern "C" {
      * @param buffer_size The size of the internal buffer to allocate (including null terminator).
      * @return A pointer to the new ccstring_t object.
      */
-    CCSTRING_API ccstring_t* ccstring_new(const char* str, size_t buffer_size);
+    CCSTRING_API ccstring_t* ccstring_new(const char* str, size_t size);
 
     /**
      * @brief Create a new ccstring_t object by copying data from a ccstring_view_t.
@@ -72,6 +72,13 @@ extern "C" {
      * @return A pointer to the new ccstring_t object.
      */
     CCSTRING_API ccstring_t* ccstring_new_from_slice(const ccstring_slice_t* slice);
+
+    /**
+     * @brief Create a new empty ccstring_t object with a specified size.
+     * @param size The size of the internal buffer to allocate (including null terminator).
+     * @return A pointer to the new ccstring_t object.
+     */
+     CCSTRING_API ccstring_t* ccstring_new_empty(size_t size);
 
     /**
      * @brief Get the internal C string (null-terminated) from a ccstring_t object.
@@ -158,7 +165,7 @@ extern "C" {
      * @param str A pointer to the ccstring_t object pointer to destroy.
      * @return The number of bytes freed.
      */
-    CCSTRING_API size_t ccstring_destroy(ccstring_t** str);
+    CCSTRING_API void ccstring_destroy(ccstring_t** str);
 
     /**
      * @brief Free a ccstring_slice_t object and set the pointer to NULL.
