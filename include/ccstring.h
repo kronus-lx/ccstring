@@ -9,14 +9,14 @@
 #define __CCSTRING_H__
 
 #ifdef __cplusplus
-extern "C" {
+    extern "C" {
 #endif
 
     /**
      * Export macro for Windows DLLs
      * This macro is used to export functions from the DLL when building it
-     */
-    #ifdef __Win32
+    */
+    #ifdef _WIN32
         #define CCSTRING_API __declspec(dllexport)
     #else
         #define CCSTRING_API
