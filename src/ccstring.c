@@ -7,22 +7,6 @@
 #define CCSTRING_SUCCESS 0
 #define CCSTRING_FAILURE -1
 
-struct ccstring {
-    char* buffer; // Pointer to the internal buffer
-    size_t length; // Length of the string (excluding null terminator)
-    size_t capacity; // Capacity of the internal buffer (including null terminator)
-};
-
-struct ccstring_view {
-    const char* buffer; // Pointer to the internal buffer
-    size_t length; // Length of the string (excluding null terminator)
-};
-
-struct ccstring_slice {
-    const char* buffer; // Pointer to the internal buffer
-    size_t length; // Length of the string (excluding null terminator)
-};
-
 ccstring_t* ccstring_new(const char* str, size_t size)
 {
     ccstring_t* new_str = (ccstring_t*)malloc(sizeof(ccstring_t));

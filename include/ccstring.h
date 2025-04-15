@@ -13,11 +13,29 @@
 #endif
 
     /**
+     * @brief C string manipulation library header file in easy to use containers.
+     * @version 1.0.0
+     * @date 2025-04-11 
+    */
+
+    #if defined(_WIN32) || defined(_WIN64)
+        #define CCSTRING_WINDOWS
+    #elif defined(__linux__)
+        #define CCSTRING_LINUX
+    #elif defined(__APPLE__)
+        #define CCSTRING_APPLE
+    #elif defined(__unix__)
+        #define CCSTRING_UNIX
+    #else
+        #error "Unknown platform!"
+    #endif
+
+    /**
      * Export macro for Windows DLLs
      * This macro is used to export functions from the DLL when building it
     */
-    #ifdef _WIN32
-        #define CCSTRING_API __declspec(dllexport)
+    #ifdef CCSTRING_WINDOWS
+          #define CCSTRING_API __declspec(dllexport)
     #else
         #define CCSTRING_API
     #endif
@@ -28,29 +46,26 @@
     #define CCSTRING_VERSION 1.0
     #define CCSTRING_VERSION_MAJOR 1
     #define CCSTRING_VERSION_MINOR 0
-    #define CCSTRING_VERSION_PATCH 0
+    #define CCSTRING_VERSION_PATCH 1
 
     #include <stddef.h>
 
-    /* Forward Declare ccstring structure*/
-    struct ccstring;
-    /* Forward Declare ccstring_view structure*/
-    struct ccstring_view;
-    /* Forward Declare ccstring_slice structure*/
-    struct ccstring_slice;
+    typedef struct  {
+        char* buffer; // Pointer to the internal buffer
+        size_t length; // Length of the string (excluding null terminator)
+        size_t capacity; // Capacity of the internal buffer (including null terminator)
+    } ccstring_t;
+    
+    typedef struct  {
+        const char* buffer; // Pointer to the internal buffer
+        size_t length; // Length of the string (excluding null terminator)
+    } ccstring_view_t; ;
+    
+    typedef struct  {
+        const char* buffer; // Pointer to the internal buffer
+        size_t length; // Length of the string (excluding null terminator)
+    } ccstring_slice_t; ;
 
-    /**
-     * @brief ccstring_t is a type that represents a string in the C string library.
-    */
-    typedef struct ccstring ccstring_t;
-    /**
-     * @brief ccstring_view_t is a type that represents a string view in the C string library.
-    */
-    typedef struct ccstring_view ccstring_view_t;
-    /**
-     * @brief ccstring_slice_t is a type that represents a string slice in the C string library.
-    */
-    typedef struct ccstring_slice ccstring_slice_t;
     /**
      * @brief Create a new ccstring_t object from a C string.
      * @param str The C string to copy into the new ccstring_t object.
