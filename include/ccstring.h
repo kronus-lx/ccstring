@@ -66,6 +66,12 @@
         size_t length; // Length of the string (excluding null terminator)
     } ccstring_slice_t; ;
 
+    typedef struct {
+        ccstring_t** list;
+        size_t count;
+        size_t capacity; 
+    } ccstring_manager_t;
+
     /**
      * @brief Create a new ccstring_t object from a C string.
      * @param str The C string to copy into the new ccstring_t object.
@@ -194,6 +200,26 @@
      */
     CCSTRING_API void ccstring_view_destroy(ccstring_view_t** view);
 
+    /**
+     * @brief Create a new ccstring_manager_t object.
+     * @param initial_capacity The initial capacity of the list.
+     * @return A pointer to the new ccstring_manager_t object.
+     */
+    CCSTRING_API ccstring_manager_t ccstring_manager_new(size_t initial_capacity);
+
+    /**
+     * @brief Free the memory used by a ccstring_manager_t object and set the pointer to NULL.
+     * @param mgr A pointer to the ccstring_manager_t object pointer to destroy.
+     */
+    CCSTRING_API int ccstring_manager_add(ccstring_manager_t* mgr, ccstring_t* str, size_t max_capacity);
+
+    /**
+     * @brief Get the ccstring_t object at a specific index in the list.
+     * @param mgr The ccstring_manager_t object.
+     * @param index The index of the ccstring_t object to retrieve.
+     * @return A pointer to the ccstring_t object at the specified index.
+     */
+    CCSTRING_API void ccstring_manager_destroy(ccstring_manager_t* mgr);
 
 #ifdef __cplusplus
 }

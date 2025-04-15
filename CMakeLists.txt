@@ -6,7 +6,7 @@ project(ccstring VERSION 1.0 LANGUAGES C)
 
 # Set C standard
 set(CMAKE_C_STANDARD 99)
-set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_STANDARD_REQUIRED True)
 
 # Status Messages
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
@@ -65,18 +65,26 @@ target_compile_definitions(ccstring PRIVATE CCSTRING_EXPORTS)
 
 # Install rules
 install(TARGETS ccstring 
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
+    EXPORT ccstringTargets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
 )
 # Install rules
 install(TARGETS ccstring_examples 
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
 )
 # Install additional headers (if needed)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
-    DESTINATION include/${PROJECT_NAME}
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}
     FILES_MATCHING PATTERN "*.h"
+)
+# Install the CMake configuration files
+install(EXPORT ccstringTargets
+    FILE ccstringTargets.cmake
+    NAMESPACE ccstring::
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/cmake/ccstring
 )

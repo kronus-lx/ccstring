@@ -260,3 +260,37 @@ void ccstring_view_destroy(ccstring_view_t** view)
         *view = NULL; // Set the pointer to NULL
     }
 }
+
+ccstring_manager_t ccstring_manager_new(size_t initial_capacity)
+{
+    ccstring_manager_t mgr;
+	mgr.list = malloc(initial_capacity * sizeof(ccstring_t*));
+	mgr.count = 0;
+	mgr.capacity = (mgr.list != NULL) ? initial_capacity : 0;
+	return mgr;
+}
+
+int ccstring_manager_add(ccstring_manager_t* mgr, ccstring_t* str, size_t max_capacity)
+{
+	if(mgr->count >= mgr->capacity){
+		size_t new_capacity = mgr->capacity + max_capacity;
+		ccstring_t** temp = realloc(mgr->list, new_capacity * sizeof(ccstring_t*));
+		if(!temp) return 1;
+		mgr->list = temp;
+		mgr->capacity = new_capacity;
+	}
+	mgr->list[mgr->count++] = str;
+	return 0;
+}
+
+void ccstring_manager_destroy(ccstring_manager_t* mgr)
+{
+	for(size_t i =0; i < mgr->count; i++){
+		if(mgr->list[i]){	
+			ccstring_destroy(&mgr->list[i]);
+		}
+	}	
+	free(mgr->list);
+	mgr->count = 0;
+	mgr->capacity = 0;
+}

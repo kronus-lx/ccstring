@@ -19,7 +19,7 @@ void creating_new_ccstring()
 
     printf("String: %s, Length: %zu\n", buffer, length);
     ccstring_destroy(&str);
-    assert(str != NULL); // Ensure str is NULL after destruction
+    assert(str == NULL); // Ensure str is NULL after destruction
 }
 
 void creating_new_ccstring_from_view()
@@ -196,6 +196,24 @@ void compare_strings()
     assert(result2 == -1);
 }
 
+void using_ccstring_manger()
+{
+    ccstring_manager_t mgr = ccstring_manager_new(2); // start with 2 slots
+
+    ccstring_t* a = ccstring_new("Hello", 50);
+    ccstring_t* b = ccstring_new("From", 50);
+    ccstring_t* c = ccstring_new("Ccstring", 50);
+
+    ccstring_manager_add(&mgr, a, 20);
+    ccstring_manager_add(&mgr, b, 20);
+    ccstring_manager_add(&mgr, c, 20);
+
+    for (size_t i = 0; i < mgr.count; i++) {
+        printf("String %zu: %s\n", i, ccstring_get(mgr.list[i]));
+    }
+    ccstring_manager_destroy(&mgr); 
+}
+
 int main(int argc, char* argv[])
 {
     // Test creating a new ccstring
@@ -214,6 +232,8 @@ int main(int argc, char* argv[])
     append_string_example();
     // Test comparing two ccstrings
     compare_strings();
+    // Test using ccstring manager
+    using_ccstring_manger();
 
     return 0;
 }
