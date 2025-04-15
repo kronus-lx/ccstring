@@ -54,8 +54,8 @@ target_include_directories(ccstring PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(ccstring_examples PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Set C standard for the library and examples
-target_compile_features(ccstring PRIVATE c_std_99)
-target_compile_features(ccstring_examples PRIVATE c_std_99)
+target_compile_features(ccstring PRIVATE c_std_11)
+target_compile_features(ccstring_examples PRIVATE c_std_11)
 
 # Link libraries
 target_link_libraries(ccstring_examples PRIVATE ccstring)
