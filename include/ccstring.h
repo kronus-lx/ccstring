@@ -13,10 +13,28 @@
 #endif
 
     /**
+     * @brief C string manipulation library header file in easy to use containers.
+     * @version 1.0.0
+     * @date 2025-04-11 
+    */
+
+    #if defined(_WIN32) || defined(_WIN64)
+        #define CCSTRING_WINDOWS
+    #elif defined(__linux__)
+        #define CCSTRING_LINUX
+    #elif defined(__APPLE__)
+        #define CCSTRING_APPLE
+    #elif defined(__unix__)
+        #define CCSTRING_UNIX
+    #else
+        #error "Unknown platform!"
+    #endif
+
+    /**
      * Export macro for Windows DLLs
      * This macro is used to export functions from the DLL when building it
     */
-    #ifdef _WIN32
+    #ifdef CCSTRING_WINDOWS
         #define CCSTRING_API __declspec(dllexport)
     #else
         #define CCSTRING_API
@@ -25,10 +43,10 @@
     /**
      * Project Version
     */
-    #define CCSTRING_VERSION 1.0
+    #define CCSTRING_VERSION 1
     #define CCSTRING_VERSION_MAJOR 1
     #define CCSTRING_VERSION_MINOR 0
-    #define CCSTRING_VERSION_PATCH 0
+    #define CCSTRING_VERSION_PATCH 1
 
     #include <stddef.h>
 
