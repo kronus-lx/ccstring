@@ -41,7 +41,6 @@ ccstring_t* ccstring_new_add_ref(ccstring_manager_t* mgr, const char* str, size_
             return NULL; // Memory allocation failed
         }
     }
-
     return new_str;
 }
 
