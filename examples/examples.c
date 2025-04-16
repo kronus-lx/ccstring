@@ -214,6 +214,21 @@ void using_ccstring_manger()
     ccstring_manager_destroy(&mgr); 
 }
 
+void using_ccstring_manager_add_ref()
+{
+    ccstring_manager_t mgr = ccstring_manager_new(2); // start with 2 slots
+
+    ccstring_t* a = ccstring_new_add_ref(&mgr, "Hello", 50);
+   
+    for (size_t i = 0; i < mgr.count; i++)
+    {
+        /* code */
+        printf("String %zu: %s\n", i, ccstring_get(mgr.list[i]));
+    }
+
+    ccstring_manager_destroy(&mgr); 
+}
+
 int main(int argc, char* argv[])
 {
     // Test creating a new ccstring
@@ -234,6 +249,8 @@ int main(int argc, char* argv[])
     compare_strings();
     // Test using ccstring manager
     using_ccstring_manger();
+    // Test using ccstring manager with add_ref
+    using_ccstring_manager_add_ref();
 
     return 0;
 }
