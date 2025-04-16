@@ -81,6 +81,15 @@
     CCSTRING_API ccstring_t* ccstring_new(const char* str, size_t size);
 
     /**
+     * @brief Create a new ccstring_t object from a C string.
+     * @param mgr ccstring_manager_t object to manage the ccstring_t object.
+     * @param str The C string to copy into the new ccstring_t object.
+     * @param buffer_size The size of the internal buffer to allocate (including null terminator).
+     * @return A pointer to the new ccstring_t object.
+     */
+    CCSTRING_API ccstring_t* ccstring_new_add_ref(ccstring_manager_t* mgr, const char* str, size_t size);
+
+    /**
      * @brief Create a new ccstring_t object by copying data from a ccstring_view_t.
      * @param view The ccstring_view_t to copy from.
      * @return A pointer to the new ccstring_t object.

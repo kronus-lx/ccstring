@@ -28,6 +28,23 @@ ccstring_t* ccstring_new(const char* str, size_t size)
     return new_str;
 }
 
+ccstring_t* ccstring_new_add_ref(ccstring_manager_t* mgr, const char* str, size_t size)
+{
+    ccstring_t* new_str = ccstring_new(str, size);
+    if (!new_str) {
+        return NULL; // Memory allocation failed
+    }
+
+    if (mgr != NULL){
+        if (ccstring_manager_add(mgr, new_str, size) != 0) {
+            ccstring_destroy(&new_str); // Clean up if adding to manager fails
+            return NULL; // Memory allocation failed
+        }
+    }
+
+    return new_str;
+}
+
 ccstring_t* ccstring_new_from_view(const ccstring_view_t* view)
 {
     return ccstring_new(view->buffer, view->length);
