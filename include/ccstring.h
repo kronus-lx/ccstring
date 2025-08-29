@@ -35,7 +35,7 @@
      * This macro is used to export functions from the DLL when building it
     */
     #ifdef CCSTRING_WINDOWS
-        #define CCSTRING_API __declspec(dllexport)
+          #define CCSTRING_API __declspec(dllexport)
     #else
         #define CCSTRING_API
     #endif
@@ -43,32 +43,35 @@
     /**
      * Project Version
     */
-    #define CCSTRING_VERSION 1
+    #define CCSTRING_VERSION 1.0
     #define CCSTRING_VERSION_MAJOR 1
     #define CCSTRING_VERSION_MINOR 0
     #define CCSTRING_VERSION_PATCH 1
 
     #include <stddef.h>
 
-    /* Forward Declare ccstring structure*/
-    struct ccstring;
-    /* Forward Declare ccstring_view structure*/
-    struct ccstring_view;
-    /* Forward Declare ccstring_slice structure*/
-    struct ccstring_slice;
+    typedef struct  {
+        char* buffer; // Pointer to the internal buffer
+        size_t length; // Length of the string (excluding null terminator)
+        size_t capacity; // Capacity of the internal buffer (including null terminator)
+    } ccstring_t;
+    
+    typedef struct  {
+        const char* buffer; // Pointer to the internal buffer
+        size_t length; // Length of the string (excluding null terminator)
+    } ccstring_view_t; ;
+    
+    typedef struct  {
+        const char* buffer; // Pointer to the internal buffer
+        size_t length; // Length of the string (excluding null terminator)
+    } ccstring_slice_t; ;
 
-    /**
-     * @brief ccstring_t is a type that represents a string in the C string library.
-    */
-    typedef struct ccstring ccstring_t;
-    /**
-     * @brief ccstring_view_t is a type that represents a string view in the C string library.
-    */
-    typedef struct ccstring_view ccstring_view_t;
-    /**
-     * @brief ccstring_slice_t is a type that represents a string slice in the C string library.
-    */
-    typedef struct ccstring_slice ccstring_slice_t;
+    typedef struct {
+        ccstring_t** list;
+        size_t count;
+        size_t capacity; 
+    } ccstring_manager_t;
+
     /**
      * @brief Create a new ccstring_t object from a C string.
      * @param str The C string to copy into the new ccstring_t object.
@@ -76,6 +79,15 @@
      * @return A pointer to the new ccstring_t object.
      */
     CCSTRING_API ccstring_t* ccstring_new(const char* str, size_t size);
+
+    /**
+     * @brief Create a new ccstring_t object from a C string.
+     * @param mgr ccstring_manager_t object to manage the ccstring_t object.
+     * @param str The C string to copy into the new ccstring_t object.
+     * @param buffer_size The size of the internal buffer to allocate (including null terminator).
+     * @return A pointer to the new ccstring_t object.
+     */
+    CCSTRING_API ccstring_t* ccstring_new_add_ref(ccstring_manager_t* mgr, const char* str, size_t size);
 
     /**
      * @brief Create a new ccstring_t object by copying data from a ccstring_view_t.
@@ -197,6 +209,26 @@
      */
     CCSTRING_API void ccstring_view_destroy(ccstring_view_t** view);
 
+    /**
+     * @brief Create a new ccstring_manager_t object.
+     * @param initial_capacity The initial capacity of the list.
+     * @return A pointer to the new ccstring_manager_t object.
+     */
+    CCSTRING_API ccstring_manager_t ccstring_manager_new(size_t initial_capacity);
+
+    /**
+     * @brief Free the memory used by a ccstring_manager_t object and set the pointer to NULL.
+     * @param mgr A pointer to the ccstring_manager_t object pointer to destroy.
+     */
+    CCSTRING_API int ccstring_manager_add(ccstring_manager_t* mgr, ccstring_t* str, size_t max_capacity);
+
+    /**
+     * @brief Get the ccstring_t object at a specific index in the list.
+     * @param mgr The ccstring_manager_t object.
+     * @param index The index of the ccstring_t object to retrieve.
+     * @return A pointer to the ccstring_t object at the specified index.
+     */
+    CCSTRING_API void ccstring_manager_destroy(ccstring_manager_t* mgr);
 
 #ifdef __cplusplus
 }

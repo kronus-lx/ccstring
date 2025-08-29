@@ -7,22 +7,6 @@
 #define CCSTRING_SUCCESS 0
 #define CCSTRING_FAILURE -1
 
-struct ccstring {
-    char* buffer; // Pointer to the internal buffer
-    size_t length; // Length of the string (excluding null terminator)
-    size_t capacity; // Capacity of the internal buffer (including null terminator)
-};
-
-struct ccstring_view {
-    const char* buffer; // Pointer to the internal buffer
-    size_t length; // Length of the string (excluding null terminator)
-};
-
-struct ccstring_slice {
-    const char* buffer; // Pointer to the internal buffer
-    size_t length; // Length of the string (excluding null terminator)
-};
-
 ccstring_t* ccstring_new(const char* str, size_t size)
 {
     ccstring_t* new_str = (ccstring_t*)malloc(sizeof(ccstring_t));
@@ -41,6 +25,22 @@ ccstring_t* ccstring_new(const char* str, size_t size)
     memcpy(new_str->buffer, str, size);
     new_str->buffer[size] = CCSTRING_NULL_TERMINATER; // Null-terminate the string
 
+    return new_str;
+}
+
+ccstring_t* ccstring_new_add_ref(ccstring_manager_t* mgr, const char* str, size_t size)
+{
+    ccstring_t* new_str = ccstring_new(str, size);
+    if (!new_str) {
+        return NULL; // Memory allocation failed
+    }
+
+    if (mgr != NULL){
+        if (ccstring_manager_add(mgr, new_str, size) != 0) {
+            ccstring_destroy(&new_str); // Clean up if adding to manager fails
+            return NULL; // Memory allocation failed
+        }
+    }
     return new_str;
 }
 
@@ -275,4 +275,38 @@ void ccstring_view_destroy(ccstring_view_t** view)
         free(*view);
         *view = NULL; // Set the pointer to NULL
     }
+}
+
+ccstring_manager_t ccstring_manager_new(size_t initial_capacity)
+{
+    ccstring_manager_t mgr;
+	mgr.list = malloc(initial_capacity * sizeof(ccstring_t*));
+	mgr.count = 0;
+	mgr.capacity = (mgr.list != NULL) ? initial_capacity : 0;
+	return mgr;
+}
+
+int ccstring_manager_add(ccstring_manager_t* mgr, ccstring_t* str, size_t max_capacity)
+{
+	if(mgr->count >= mgr->capacity){
+		size_t new_capacity = mgr->capacity + max_capacity;
+		ccstring_t** temp = realloc(mgr->list, new_capacity * sizeof(ccstring_t*));
+		if(!temp) return 1;
+		mgr->list = temp;
+		mgr->capacity = new_capacity;
+	}
+	mgr->list[mgr->count++] = str;
+	return 0;
+}
+
+void ccstring_manager_destroy(ccstring_manager_t* mgr)
+{
+	for(size_t i =0; i < mgr->count; i++){
+		if(mgr->list[i]){	
+			ccstring_destroy(&mgr->list[i]);
+		}
+	}	
+	free(mgr->list);
+	mgr->count = 0;
+	mgr->capacity = 0;
 }
