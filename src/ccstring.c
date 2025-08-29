@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #define CCSTRING_NULL_TERMINATER '\0'
 #define CCSTRING_SUCCESS 0
@@ -25,6 +26,32 @@ ccstring_t* ccstring_new(const char* str, size_t size)
     memcpy(new_str->buffer, str, size);
     new_str->buffer[size] = CCSTRING_NULL_TERMINATER; // Null-terminate the string
 
+    return new_str;
+}
+
+ccstring_t* ccstring_auto(const char* str)
+{
+    ccstring_t* new_str = (ccstring_t*)malloc(sizeof(ccstring_t));
+    if (!new_str) {
+        return NULL; // Memory allocation failed
+    }
+    
+    size_t str_size = strlen(str);
+    if(str_size == 0){
+        free(new_str);
+        return NULL;
+    } 
+
+    new_str->length = str_size;
+    new_str->capacity = str_size + 1;
+    new_str->buffer = (char*)malloc(new_str->capacity);
+    if(new_str->buffer == NULL){
+        free(new_str);
+        return NULL;
+    }
+
+    memcpy(new_str->buffer, str, str_size);
+    new_str->buffer[new_str->length] = CCSTRING_NULL_TERMINATER; // Null-terminate the string
     return new_str;
 }
 
@@ -74,7 +101,7 @@ ccstring_t* ccstring_new_empty(size_t size)
     return new_str;
 }
 
-char* ccstring_get(const ccstring_t* str)
+const char* ccstring_get(const ccstring_t* str)
 {
     return str->buffer;
 }
@@ -301,12 +328,16 @@ int ccstring_manager_add(ccstring_manager_t* mgr, ccstring_t* str, size_t max_ca
 
 void ccstring_manager_destroy(ccstring_manager_t* mgr)
 {
-	for(size_t i =0; i < mgr->count; i++){
-		if(mgr->list[i]){	
-			ccstring_destroy(&mgr->list[i]);
-		}
-	}	
-	free(mgr->list);
-	mgr->count = 0;
-	mgr->capacity = 0;
+    if (!mgr || !mgr->list) return;
+
+    for (size_t i = 0; i < mgr->count; i++) {
+        if (mgr->list[i]) {
+            ccstring_destroy(&mgr->list[i]);
+        }
+    }
+
+    free(mgr->list);
+    mgr->list = NULL;
+    mgr->count = 0;
+    mgr->capacity = 0;
 }

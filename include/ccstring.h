@@ -82,6 +82,13 @@
 
     /**
      * @brief Create a new ccstring_t object from a C string.
+     * @param str The C string to copy into the new ccstring_t object.
+     * @return A pointer to the new ccstring_t object.
+     */
+    CCSTRING_API ccstring_t* ccstring_auto(const char* str);
+
+    /**
+     * @brief Create a new ccstring_t object from a C string.
      * @param mgr ccstring_manager_t object to manage the ccstring_t object.
      * @param str The C string to copy into the new ccstring_t object.
      * @param buffer_size The size of the internal buffer to allocate (including null terminator).
@@ -115,7 +122,7 @@
      * @param str The ccstring_t object.
      * @return A pointer to the internal C string.
      */
-    CCSTRING_API char* ccstring_get(const ccstring_t* str);
+    CCSTRING_API const char* ccstring_get(const ccstring_t* str);
 
     /**
      * @brief Get the length of the string (excluding null terminator).
