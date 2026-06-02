@@ -117,11 +117,16 @@ size_t ccstring_length(const ccstring_t* str)
     return str->length;
 }
 
-ccstring_view_t* ccstring_view_new(ccstring_t* str)
+ccstring_view_t* ccstring_view_new(const ccstring_t* str)
 {
-    ccstring_view_t* view = (ccstring_view_t*)malloc(sizeof(ccstring_view_t));
+    ccstring_view_t* view = (ccstring_view_t*)malloc(sizeof(*view));
     if (!view) {
-        return NULL; // Memory allocation failed
+        return NULL;
+    }
+
+    if (!str || !str->buffer) {
+        free(view);
+        return NULL;
     }
 
     view->buffer = str->buffer;

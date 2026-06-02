@@ -140,7 +140,7 @@
      * @param str The ccstring_t object to view.
      * @return A new ccstring_view_t object pointing to the same data.
      */
-    CCSTRING_API ccstring_view_t* ccstring_view_new(ccstring_t* str);
+    CCSTRING_API ccstring_view_t* ccstring_view_new(const ccstring_t* str);
 
     /**
      * @brief Create a ccstring_slice_t object representing a substring of a ccstring_t.
