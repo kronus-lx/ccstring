@@ -10,48 +10,54 @@
 
 ccstring_t* ccstring_new(const char* str, size_t size)
 {
-    ccstring_t* new_str = (ccstring_t*)malloc(sizeof(ccstring_t));
+    ccstring_t* new_str = (ccstring_t*)malloc(sizeof(*new_str));
     if (!new_str) {
-        return NULL; // Memory allocation failed
+        return NULL;
     }
 
     new_str->length = size;
-    new_str->capacity = size + 1; // +1 for null terminator
+    new_str->capacity = size + 1;
     new_str->buffer = (char*)malloc(new_str->capacity);
     if (!new_str->buffer) {
         free(new_str);
-        return NULL; // Memory allocation failed
+        return NULL;
     }
 
-    memcpy(new_str->buffer, str, size);
-    new_str->buffer[size] = CCSTRING_NULL_TERMINATER; // Null-terminate the string
+    if (str != NULL && size > 0) {
+        memcpy(new_str->buffer, str, size);
+    }
+    new_str->buffer[size] = CCSTRING_NULL_TERMINATER;
 
     return new_str;
 }
 
 ccstring_t* ccstring_auto(const char* str)
 {
-    ccstring_t* new_str = (ccstring_t*)malloc(sizeof(ccstring_t));
-    if (!new_str) {
-        return NULL; // Memory allocation failed
+    if (str == NULL) {
+        return NULL;
     }
-    
+
+    ccstring_t* new_str = (ccstring_t*)malloc(sizeof(*new_str));
+    if (!new_str) {
+        return NULL;
+    }
+
     size_t str_size = strlen(str);
-    if(str_size == 0){
+    if (str_size == 0) {
         free(new_str);
         return NULL;
-    } 
+    }
 
     new_str->length = str_size;
     new_str->capacity = str_size + 1;
     new_str->buffer = (char*)malloc(new_str->capacity);
-    if(new_str->buffer == NULL){
+    if (new_str->buffer == NULL) {
         free(new_str);
         return NULL;
     }
 
     memcpy(new_str->buffer, str, str_size);
-    new_str->buffer[new_str->length] = CCSTRING_NULL_TERMINATER; // Null-terminate the string
+    new_str->buffer[new_str->length] = CCSTRING_NULL_TERMINATER;
     return new_str;
 }
 
@@ -83,20 +89,20 @@ ccstring_t* ccstring_new_from_slice(const ccstring_slice_t* slice)
 
 ccstring_t* ccstring_new_empty(size_t size)
 {
-    ccstring_t* new_str = (ccstring_t*)malloc(sizeof(ccstring_t));
+    ccstring_t* new_str = (ccstring_t*)malloc(sizeof(*new_str));
     if (!new_str) {
-        return NULL; // Memory allocation failed
+        return NULL;
     }
 
     new_str->length = 0;
-    new_str->capacity = size + 1; // +1 for null terminator
+    new_str->capacity = size + 1;
     new_str->buffer = (char*)malloc(new_str->capacity);
     if (!new_str->buffer) {
         free(new_str);
-        return NULL; // Memory allocation failed
+        return NULL;
     }
 
-    new_str->buffer[0] = CCSTRING_NULL_TERMINATER; // Null-terminate the string
+    new_str->buffer[0] = CCSTRING_NULL_TERMINATER;
 
     return new_str;
 }
@@ -154,14 +160,14 @@ int ccstring_resize(ccstring_t** str, size_t new_size)
     if (new_size > old_str->capacity) {
         char* new_buffer = (char*)realloc(old_str->buffer, new_size + 1);
         if (!new_buffer) {
-            return CCSTRING_FAILURE; // Memory allocation failed
+            return CCSTRING_FAILURE;
         }
         old_str->buffer = new_buffer;
-        old_str->capacity = new_size + 1; // +1 for null terminator
+        old_str->capacity = new_size + 1;
     }
 
     old_str->length = new_size;
-    old_str->buffer[new_size] = CCSTRING_NULL_TERMINATER; // Null-terminate the string
+    old_str->buffer[new_size] = CCSTRING_NULL_TERMINATER;
 
     return CCSTRING_SUCCESS; // Success
 }
@@ -169,89 +175,90 @@ int ccstring_resize(ccstring_t** str, size_t new_size)
 int ccstring_copy(ccstring_t** str, const char* new_str, size_t new_size)
 {
     if (!str || !*str) {
-        return CCSTRING_FAILURE; // Invalid pointer
+        return CCSTRING_FAILURE; 
     }
 
     ccstring_t* old_str = *str;
     if (new_size > old_str->capacity) {
         char* new_buffer = (char*)realloc(old_str->buffer, new_size + 1);
         if (!new_buffer) {
-            return CCSTRING_FAILURE; // Memory allocation failed
+            return CCSTRING_FAILURE; 
         }
         old_str->buffer = new_buffer;
-        old_str->capacity = new_size + 1; // +1 for null terminator
+        old_str->capacity = new_size + 1;
     }
 
     memcpy(old_str->buffer, new_str, new_size);
     old_str->length = new_size;
-    old_str->buffer[new_size] = CCSTRING_NULL_TERMINATER; // Null-terminate the string
+    old_str->buffer[new_size] = CCSTRING_NULL_TERMINATER;
 
-    return CCSTRING_SUCCESS; // Success
+    return CCSTRING_SUCCESS; 
 }
 
 int ccstring_copy_slice(ccstring_t** str, const ccstring_slice_t* slice)
 {
     if (!str || !*str || !slice) {
-        return CCSTRING_FAILURE; // Invalid pointer
+        return CCSTRING_FAILURE;
     }
 
     ccstring_t* old_str = *str;
     if (slice->length > old_str->capacity) {
         char* new_buffer = (char*)realloc(old_str->buffer, slice->length + 1);
         if (!new_buffer) {
-            return CCSTRING_FAILURE; // Memory allocation failed
+            return CCSTRING_FAILURE; 
         }
         old_str->buffer = new_buffer;
-        old_str->capacity = slice->length + 1; // +1 for null terminator
+        old_str->capacity = slice->length + 1; 
     }
 
     memcpy(old_str->buffer, slice->buffer, slice->length);
     old_str->length = slice->length;
-    old_str->buffer[slice->length] = CCSTRING_NULL_TERMINATER; // Null-terminate the string
+    old_str->buffer[slice->length] = CCSTRING_NULL_TERMINATER;
 
-    return CCSTRING_SUCCESS; // Success
+    return CCSTRING_SUCCESS;
 }
 
 int ccstring_copy_view(ccstring_t** str, const ccstring_view_t* view)
 {
     if (!str || !*str || !view) {
-        return CCSTRING_FAILURE; // Invalid pointer
+        return CCSTRING_FAILURE;
     }
 
     ccstring_t* old_str = *str;
     if (view->length > old_str->capacity) {
         char* new_buffer = (char*)realloc(old_str->buffer, view->length + 1);
         if (!new_buffer) {
-            return CCSTRING_FAILURE; // Memory allocation failed
+            return CCSTRING_FAILURE;
         }
         old_str->buffer = new_buffer;
-        old_str->capacity = view->length + 1; // +1 for null terminator
+        old_str->capacity = view->length + 1;
     }
 
     memcpy(old_str->buffer, view->buffer, view->length);
     old_str->length = view->length;
-    old_str->buffer[view->length] = CCSTRING_NULL_TERMINATER; // Null-terminate the string
+    old_str->buffer[view->length] = CCSTRING_NULL_TERMINATER;
 
     return CCSTRING_SUCCESS; // Success
 }
 
 int ccstring_compare(const ccstring_t* str1, const ccstring_t* str2)
 {
-    if (!str1 || !str2) {
-        return CCSTRING_FAILURE; // Invalid pointer
+    if (!str1 || !str2 || !str1->buffer || !str2->buffer) {
+        return CCSTRING_FAILURE;
     }
 
-    size_t min_length = str1->length < str2->length ? str1->length : str2->length;
-    int cmp = memcmp(str1->buffer, str2->buffer, min_length);
+    int cmp = memcmp(str1->buffer, str2->buffer, str1->length < str2->length ? str1->length : str2->length);
     if (cmp != 0) {
-        return CCSTRING_FAILURE; // Strings are not equal
+        return cmp;
     }
 
-    // If they are equal up to the length of the shorter string, compare lengths
-    if (str1->length != str2->length) {
-        return CCSTRING_FAILURE; // Strings are not equal due to differing lengths
+    if (str1->length < str2->length) {
+        return -1;
     }
-    return CCSTRING_SUCCESS; // Strings are equal
+    if (str1->length > str2->length) {
+        return 1;
+    }
+    return CCSTRING_SUCCESS;
 }
 
 int ccstring_append(ccstring_t** str, const char* new_str, size_t new_size)
@@ -266,15 +273,15 @@ int ccstring_append(ccstring_t** str, const char* new_str, size_t new_size)
     if (new_length > old_str->capacity) {
         char* new_buffer = (char*)realloc(old_str->buffer, new_length + 1);
         if (!new_buffer) {
-            return CCSTRING_FAILURE; // Memory allocation failed
+            return CCSTRING_FAILURE;
         }
         old_str->buffer = new_buffer;
-        old_str->capacity = new_length + 1; // +1 for null terminator
+        old_str->capacity = new_length + 1;
     }
 
     memcpy(old_str->buffer + old_str->length, new_str, new_size);
     old_str->length = new_length;
-    old_str->buffer[new_length] = CCSTRING_NULL_TERMINATER; // Null-terminate the string
+    old_str->buffer[new_length] = CCSTRING_NULL_TERMINATER;
 
     return CCSTRING_SUCCESS; // Success
 }
@@ -300,30 +307,69 @@ void ccstring_view_destroy(ccstring_view_t** view)
 {
     if (view && *view) {
         free(*view);
-        *view = NULL; // Set the pointer to NULL
+        *view = NULL;
     }
 }
 
 ccstring_manager_t ccstring_manager_new(size_t initial_capacity)
 {
-    ccstring_manager_t mgr;
-	mgr.list = malloc(initial_capacity * sizeof(ccstring_t*));
-	mgr.count = 0;
-	mgr.capacity = (mgr.list != NULL) ? initial_capacity : 0;
-	return mgr;
+    ccstring_manager_t mgr = {0};
+    if (initial_capacity == 0) {
+        initial_capacity = 1;
+    }
+
+    mgr.list = (ccstring_t**)malloc(initial_capacity * sizeof(*mgr.list));
+    if (mgr.list != NULL) {
+        mgr.capacity = initial_capacity;
+    }
+
+    return mgr;
 }
 
 int ccstring_manager_add(ccstring_manager_t* mgr, ccstring_t* str, size_t max_capacity)
 {
-	if(mgr->count >= mgr->capacity){
-		size_t new_capacity = mgr->capacity + max_capacity;
-		ccstring_t** temp = realloc(mgr->list, new_capacity * sizeof(ccstring_t*));
-		if(!temp) return 1;
-		mgr->list = temp;
-		mgr->capacity = new_capacity;
-	}
-	mgr->list[mgr->count++] = str;
-	return 0;
+    size_t i;
+
+    if (!mgr || !str) {
+        return CCSTRING_FAILURE;
+    }
+
+    for (i = 0; i < mgr->count; ++i) {
+        if (mgr->list[i] == str) {
+            return CCSTRING_FAILURE;
+        }
+    }
+
+    if (mgr->count >= mgr->capacity) {
+        size_t new_capacity = mgr->capacity + (max_capacity > 0 ? max_capacity : mgr->capacity);
+        ccstring_t** temp = (ccstring_t**)realloc(mgr->list, new_capacity * sizeof(*temp));
+        if (!temp) {
+            return CCSTRING_FAILURE;
+        }
+        mgr->list = temp;
+        mgr->capacity = new_capacity;
+    }
+
+    mgr->list[mgr->count++] = str;
+    return CCSTRING_SUCCESS;
+}
+
+int ccstring_manager_remove(ccstring_manager_t* mgr, size_t index, ccstring_t** out_str)
+{
+    if (!mgr || !mgr->list || index >= mgr->count) {
+        return CCSTRING_FAILURE;
+    }
+
+    if (out_str) {
+        *out_str = mgr->list[index];
+    }
+
+    for (size_t i = index + 1; i < mgr->count; ++i) {
+        mgr->list[i - 1] = mgr->list[i];
+    }
+
+    mgr->list[--mgr->count] = NULL;
+    return CCSTRING_SUCCESS;
 }
 
 void ccstring_manager_destroy(ccstring_manager_t* mgr)

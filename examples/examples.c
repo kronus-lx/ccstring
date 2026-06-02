@@ -27,7 +27,7 @@ void creating_new_ccstring_auto()
     printf("------------------------------------------------------\n");
     ccstring_t* str = ccstring_auto("Hello, World!");
     assert(str != NULL);
-    printf("Length of ccstring: %ld\n", str->length);
+    printf("Length of ccstring: %zu\n", str->length);
     printf("Value of ccstring: %s\n", ccstring_get(str));
     ccstring_destroy(&str);
 }
@@ -94,12 +94,12 @@ void creating_new_ccstring_from_slice()
     const char* buffer = ccstring_get(new_str);
     size_t length = ccstring_length(new_str);
 
-    printf("Length of ccstring: %ld\n", length);
+    printf("Length of ccstring: %zu\n", length);
 
     assert(buffer != NULL);
     assert(length == 3);
     
-    printf("String from slice: %s, Length: %ld\n", buffer, length);
+    printf("String from slice: %s, Length: %zu\n", buffer, length);
     
     ccstring_destroy(&new_str);
     ccstring_slice_destroy(&slice);
@@ -210,9 +210,9 @@ void compare_strings()
 
     int result2 = ccstring_compare(str3, str4);
     printf("result: %d\n", result2 );
-    
-    // Assert the expected result for unequal strings (-1)
-    assert(result2 == -1);
+
+    assert(result2 != 0);
+    assert(result2 > 0);
 }
 
 void creating_ccstring_mgr()

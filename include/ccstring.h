@@ -34,8 +34,12 @@
      * Export macro for Windows DLLs
      * This macro is used to export functions from the DLL when building it
     */
-    #ifdef CCSTRING_WINDOWS
-          #define CCSTRING_API __declspec(dllexport)
+    #if defined(_WIN32) || defined(_WIN64)
+        #if defined(CCSTRING_BUILDING)
+            #define CCSTRING_API __declspec(dllexport)
+        #else
+            #define CCSTRING_API __declspec(dllimport)
+        #endif
     #else
         #define CCSTRING_API
     #endif
@@ -51,19 +55,19 @@
     #include <stddef.h>
 
     typedef struct  {
-        char* buffer; // Pointer to the internal buffer
-        size_t length; // Length of the string (excluding null terminator)
-        size_t capacity; // Capacity of the internal buffer (including null terminator)
+        char* buffer;
+        size_t length;
+        size_t capacity;
     } ccstring_t;
     
     typedef struct  {
-        const char* buffer; // Pointer to the internal buffer
-        size_t length; // Length of the string (excluding null terminator)
+        const char* buffer; 
+        size_t length;
     } ccstring_view_t; ;
     
     typedef struct  {
-        const char* buffer; // Pointer to the internal buffer
-        size_t length; // Length of the string (excluding null terminator)
+        const char* buffer;
+        size_t length;
     } ccstring_slice_t; ;
 
     typedef struct {
@@ -224,16 +228,26 @@
     CCSTRING_API ccstring_manager_t ccstring_manager_new(size_t initial_capacity);
 
     /**
-     * @brief Free the memory used by a ccstring_manager_t object and set the pointer to NULL.
-     * @param mgr A pointer to the ccstring_manager_t object pointer to destroy.
+     * @brief Add a string to the manager and take ownership of it.
+     * @param mgr The manager that will own the string.
+     * @param str The string to register.
+     * @param max_capacity Growth step used when reallocating the internal list.
+     * @return 0 on success, non-zero on failure.
      */
     CCSTRING_API int ccstring_manager_add(ccstring_manager_t* mgr, ccstring_t* str, size_t max_capacity);
 
     /**
-     * @brief Get the ccstring_t object at a specific index in the list.
-     * @param mgr The ccstring_manager_t object.
-     * @param index The index of the ccstring_t object to retrieve.
-     * @return A pointer to the ccstring_t object at the specified index.
+     * @brief Remove and return one string from the manager without freeing it.
+     * @param mgr The manager that currently owns the string.
+     * @param index The index of the string to detach.
+     * @param out_str Output pointer that receives the detached string.
+     * @return 0 on success, non-zero on failure.
+     */
+    CCSTRING_API int ccstring_manager_remove(ccstring_manager_t* mgr, size_t index, ccstring_t** out_str);
+
+    /**
+     * @brief Destroy all strings owned by the manager and release the manager list.
+     * @param mgr The manager to destroy.
      */
     CCSTRING_API void ccstring_manager_destroy(ccstring_manager_t* mgr);
 
