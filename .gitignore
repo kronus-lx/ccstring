@@ -1,6 +1,9 @@
 build/
 out/
 
+__pycache__/
+*.pyc
+
 # Prerequisites
 *.d
 

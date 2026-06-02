@@ -1,8 +1,11 @@
-# Set the minimum required version of CMake
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.15)
 
-# Project name
-project(ccstring VERSION 1.0 LANGUAGES C)
+project(ccstring VERSION 1.0.0 LANGUAGES C)
+
+include(GNUInstallDirs)
+
+option(CCSTRING_BUILD_EXAMPLES "Build example executable" OFF)
+option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
 # Set C standard
 set(CMAKE_C_STANDARD 11)
@@ -39,47 +42,54 @@ else()
     message(FATAL_ERROR "Unsupported platform")
 endif()
 
-# Create library and executable
-add_library(ccstring SHARED "src/ccstring.c")
-add_executable(ccstring_examples "examples/examples.c")
+# Create library and optional example executable
+add_library(ccstring "src/ccstring.c")
+
+if(CCSTRING_BUILD_EXAMPLES)
+    add_executable(ccstring_examples "examples/examples.c")
+endif()
 
 # Include directories and compile features
-target_include_directories(ccstring PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_include_directories(ccstring_examples PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(ccstring PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/ccstring>
+)
+
+if(CCSTRING_BUILD_EXAMPLES)
+    target_include_directories(ccstring_examples PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    target_compile_features(ccstring_examples PRIVATE c_std_11)
+    target_compile_options(ccstring_examples PRIVATE
+        $<$<C_COMPILER_ID:MSVC>:/W4 /WX /GS /guard:cf>
+        $<$<NOT:$<C_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -fstack-protector-strong>
+    )
+    target_link_libraries(ccstring_examples PRIVATE ccstring)
+endif()
 
 target_compile_features(ccstring PRIVATE c_std_11)
-target_compile_features(ccstring_examples PRIVATE c_std_11)
-
-# Harden compiler settings for memory safety and platform correctness.
 target_compile_options(ccstring PRIVATE
     $<$<C_COMPILER_ID:MSVC>:/W4 /WX /GS /guard:cf>
     $<$<NOT:$<C_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -fstack-protector-strong>
 )
-target_compile_options(ccstring_examples PRIVATE
-    $<$<C_COMPILER_ID:MSVC>:/W4 /WX /GS /guard:cf>
-    $<$<NOT:$<C_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -fstack-protector-strong>
-)
-
-# Link libraries
-target_link_libraries(ccstring_examples PRIVATE ccstring)
 
 # Export/import symbols correctly on Windows and keep the library build definition internal.
 target_compile_definitions(ccstring PRIVATE CCSTRING_BUILDING)
 
-# Install rules
-install(TARGETS ccstring 
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
+install(TARGETS ccstring
+    EXPORT ccstringTargets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
-# Install rules
-install(TARGETS ccstring_examples 
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-)
-# Install additional headers (if needed)
+
+if(CCSTRING_BUILD_EXAMPLES)
+    install(TARGETS ccstring_examples
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
+endif()
+
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
-    DESTINATION include/${PROJECT_NAME}
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ccstring
     FILES_MATCHING PATTERN "*.h"
 )
