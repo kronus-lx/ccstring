@@ -6,7 +6,7 @@
 
 #define CCSTRING_NULL_TERMINATER '\0'
 #define CCSTRING_SUCCESS 0
-#define CCSTRING_FAILURE -1
+#define CCSTRING_FAILURE 1
 
 ccstring_t* ccstring_new(const char* str, size_t size)
 {
@@ -253,16 +253,19 @@ int ccstring_compare(const ccstring_t* str1, const ccstring_t* str2)
     }
 
     int cmp = memcmp(str1->buffer, str2->buffer, str1->length < str2->length ? str1->length : str2->length);
+    
     if (cmp != 0) {
         return cmp;
     }
 
-    if (str1->length < str2->length) {
-        return -1;
-    }
-    if (str1->length > str2->length) {
+    else if (str1->length < str2->length) {
         return 1;
     }
+
+    else if (str1->length > str2->length) {
+        return 2;
+    }
+    
     return CCSTRING_SUCCESS;
 }
 

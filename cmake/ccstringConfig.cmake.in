@@ -1,0 +1,7 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/ccstringTargets.cmake")
+
+if(NOT TARGET ccstring::ccstring)
+    message(FATAL_ERROR "ccstring target not found")
+endif()

@@ -50,27 +50,27 @@
     #define CCSTRING_VERSION 1.0
     #define CCSTRING_VERSION_MAJOR 1
     #define CCSTRING_VERSION_MINOR 0
-    #define CCSTRING_VERSION_PATCH 1
+    #define CCSTRING_VERSION_PATCH 2
 
     #include <stddef.h>
 
-    typedef struct  {
+    typedef struct ccstring {
         char* buffer;
         size_t length;
         size_t capacity;
     } ccstring_t;
     
-    typedef struct  {
-        const char* buffer; 
-        size_t length;
-    } ccstring_view_t; ;
-    
-    typedef struct  {
+    typedef struct ccstring_view {
         const char* buffer;
         size_t length;
-    } ccstring_slice_t; ;
+    } ccstring_view_t;
+    
+    typedef struct ccstring_slice {
+        const char* buffer;
+        size_t length;
+    } ccstring_slice_t;
 
-    typedef struct {
+    typedef struct ccstring_manager {
         ccstring_t** list;
         size_t count;
         size_t capacity; 

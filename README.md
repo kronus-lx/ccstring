@@ -14,6 +14,20 @@ The `ccstring` library provides an abstraction for managing dynamically allocate
 
 ---
 
+## Vcpkg Support
+
+This repository includes a `vcpkg.json` manifest file so it can be built via vcpkg manifest mode.
+
+To build with vcpkg:
+
+```powershell
+vcpkg install --triplet x64-windows
+cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>\scripts\buildsystems\vcpkg.cmake
+cmake --build build
+```
+
+If you are using a different triplet, update the `--triplet` value as needed.
+
 ## Example Usage
 
 ### Creating a New ccstring

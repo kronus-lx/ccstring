@@ -3,6 +3,17 @@ out/
 
 __pycache__/
 *.pyc
+.DS_Store
+.vscode/
+.venv/
+env/
+.idea/
+.vs/
+.cache/
+.mypy_cache/
+.pytest_cache/
+.tox/
+.coverage
 
 # Prerequisites
 *.d

@@ -1,0 +1,8 @@
+{
+  "name": "ccstring",
+  "version-string": "1.0.0",
+  "description": "Easy string allocation and deallocation for C programmers.",
+  "homepage": "https://github.com/kronus-lx/ccstring",
+  "license": "MIT",
+  "dependencies": []
+}
