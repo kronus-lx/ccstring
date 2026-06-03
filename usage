@@ -1,0 +1,28 @@
+ccstring provides CMake targets via a standard CMake package configuration.
+
+## Vcpkg Manifest Usage
+
+This project supports vcpkg manifest mode through `vcpkg.json`.
+
+To build the project with vcpkg:
+
+```powershell
+vcpkg install --triplet x64-windows
+cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>\scripts\buildsystems\vcpkg.cmake
+cmake --build build
+```
+
+To consume `ccstring` from another CMake project using vcpkg:
+
+```cmake
+find_package(ccstring REQUIRED)
+
+add_executable(myapp main.c)
+target_link_libraries(myapp PRIVATE ccstring::ccstring)
+```
+
+### Notes
+
+- The package installs header files under `include/`.
+- The library exports the target `ccstring::ccstring`.
+- Use the appropriate vcpkg triplet for your platform and toolchain.

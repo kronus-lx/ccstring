@@ -35,10 +35,14 @@
      * This macro is used to export functions from the DLL when building it
     */
     #if defined(_WIN32) || defined(_WIN64)
-        #if defined(CCSTRING_BUILDING)
-            #define CCSTRING_API __declspec(dllexport)
+        #if defined(BUILD_SHARED_LIBS)
+            #if defined(CCSTRING_BUILDING)
+                #define CCSTRING_API __declspec(dllexport)
+            #else
+                #define CCSTRING_API __declspec(dllimport)
+            #endif
         #else
-            #define CCSTRING_API __declspec(dllimport)
+            #define CCSTRING_API
         #endif
     #else
         #define CCSTRING_API

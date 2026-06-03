@@ -119,8 +119,7 @@ static void example_resize_ccstring(void)
 
     printf("Original String: %s\n", ccstring_get(str));
 
-    int result = ccstring_resize(&str, 20);
-    assert(result == 0);
+    assert(ccstring_resize(&str, 20) == 0);
 
     const char* buffer = ccstring_get(str);
     size_t length = ccstring_length(str);
@@ -140,8 +139,7 @@ static void example_copy_ccstring(void)
     ccstring_t* str = ccstring_new("Hello, World!", 13);
     assert(str != NULL);
 
-    int result = ccstring_copy(&str, "Goodbye, World!", 15);
-    assert(result == 0);
+    assert(ccstring_copy(&str, "Goodbye, World!", 15) == 0);
 
     const char* buffer = ccstring_get(str);
     size_t length = ccstring_length(str);
@@ -170,13 +168,11 @@ static void example_copy_view_and_slice(void)
     ccstring_t* target = ccstring_new_empty(1);
     assert(target != NULL);
 
-    int result = ccstring_copy_view(&target, view);
-    assert(result == 0);
+    assert(ccstring_copy_view(&target, view) == 0);
     assert(memcmp(ccstring_get(target), "Hello, World!", 13) == 0);
     printf("Copied view: %s, Length: %zu\n", ccstring_get(target), ccstring_length(target));
 
-    result = ccstring_copy_slice(&target, slice);
-    assert(result == 0);
+    assert(ccstring_copy_slice(&target, slice) == 0);
     assert(memcmp(ccstring_get(target), "World", 5) == 0);
     printf("Copied slice: %s, Length: %zu\n", ccstring_get(target), ccstring_length(target));
 
@@ -192,8 +188,7 @@ static void example_append_ccstring(void)
     ccstring_t* str = ccstring_new("Hello", 5);
     assert(str != NULL);
 
-    int result = ccstring_append(&str, ", World!", 8);
-    assert(result == 0);
+    assert(ccstring_append(&str, ", World!", 8) == 0);
 
     const char* buffer = ccstring_get(str);
     size_t length = ccstring_length(str);
@@ -238,10 +233,10 @@ static void example_manager_safe_use(void)
     printf("------------------------------------------------------\n");
     ccstring_manager_t manager = ccstring_manager_new(2);
 
-    ccstring_t* str1 = ccstring_new_add_ref(&manager, "Hello", 5);
-    ccstring_t* str2 = ccstring_new_add_ref(&manager, "World", 5);
-    ccstring_t* str3 = ccstring_new_add_ref(&manager, "!", 1);
-    assert(str1 != NULL && str2 != NULL && str3 != NULL);
+    assert(ccstring_new_add_ref(&manager, "Hello", 5) != NULL);
+    assert(ccstring_new_add_ref(&manager, "World", 5) != NULL);
+    assert(ccstring_new_add_ref(&manager, "!", 1) != NULL);
+    assert(manager.count == 3);
 
     printf("Manager count after add_ref: %zu\n", manager.count);
     for (size_t i = 0; i < manager.count; i++) {
@@ -250,8 +245,7 @@ static void example_manager_safe_use(void)
 
     // Safe ownership transfer: detach one string from the manager.
     ccstring_t* detached = NULL;
-    int result = ccstring_manager_remove(&manager, 1, &detached);
-    assert(result == 0);
+    assert(ccstring_manager_remove(&manager, 1, &detached) == 0);
     assert(detached != NULL);
     printf("Detached string: %s\n", ccstring_get(detached));
 
