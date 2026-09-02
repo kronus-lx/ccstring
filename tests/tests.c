@@ -262,6 +262,133 @@ static void example_manager_safe_use(void)
     ccstring_manager_destroy(&manager);
 }
 
+static void example_capacity_boundaries(void)
+{
+    printf("------------------------------------------------------\n");
+
+    // Filling the buffer exactly must still leave room for the null terminator.
+    ccstring_t* str = ccstring_new("Hello", 5);
+    assert(str != NULL);
+
+    assert(ccstring_append(&str, "!", 1) == 0);
+    assert(ccstring_length(str) == 6);
+    assert(memcmp(ccstring_get(str), "Hello!", 7) == 0);
+
+    printf("Boundary append: %s, Length: %zu\n", ccstring_get(str), ccstring_length(str));
+    ccstring_destroy(&str);
+
+    // Growing zero-fills the added bytes instead of exposing stale heap contents.
+    ccstring_t* grown = ccstring_new("abc", 3);
+    assert(grown != NULL);
+
+    assert(ccstring_resize(&grown, 8) == 0);
+    assert(ccstring_length(grown) == 8);
+    assert(memcmp(ccstring_get(grown), "abc\0\0\0\0\0", 8) == 0);
+
+    printf("Resized String: %s, Length: %zu\n", ccstring_get(grown), ccstring_length(grown));
+    ccstring_destroy(&grown);
+
+    // A NULL source yields a defined, zero-filled buffer.
+    ccstring_t* blank = ccstring_new(NULL, 4);
+    assert(blank != NULL);
+    assert(memcmp(ccstring_get(blank), "\0\0\0\0", 4) == 0);
+    ccstring_destroy(&blank);
+
+    // The accessors tolerate NULL like the rest of the API.
+    assert(ccstring_get(NULL) == NULL);
+    assert(ccstring_length(NULL) == 0);
+
+    // ccstring_auto accepts the empty string, matching ccstring_new(str, 0).
+    ccstring_t* empty = ccstring_auto("");
+    assert(empty != NULL);
+    assert(ccstring_length(empty) == 0);
+    ccstring_destroy(&empty);
+}
+
+static void example_self_referencing_operations(void)
+{
+    printf("------------------------------------------------------\n");
+
+    // Appending a string to itself: the source lives in the buffer being reallocated.
+    ccstring_t* str = ccstring_new("ab", 2);
+    assert(str != NULL);
+
+    assert(ccstring_append(&str, ccstring_get(str), ccstring_length(str)) == 0);
+    assert(ccstring_length(str) == 4);
+    assert(memcmp(ccstring_get(str), "abab", 4) == 0);
+
+    printf("Self-appended String: %s, Length: %zu\n", ccstring_get(str), ccstring_length(str));
+
+    // Copying a slice of a string back over that same string: the regions overlap.
+    ccstring_slice_t* slice = ccstring_slice_new(str, 1, 3);
+    assert(slice != NULL);
+
+    assert(ccstring_copy_slice(&str, slice) == 0);
+    assert(ccstring_length(str) == 2);
+    assert(memcmp(ccstring_get(str), "ba", 2) == 0);
+
+    printf("Self-sliced String: %s, Length: %zu\n", ccstring_get(str), ccstring_length(str));
+
+    // The slice points at stale content now, so it is only destroyed from here on.
+    ccstring_slice_destroy(&slice);
+    ccstring_destroy(&str);
+}
+
+static void example_manager_zero_initialised(void)
+{
+    printf("------------------------------------------------------\n");
+
+    // A manager that never allocated a list still has to grow safely.
+    ccstring_manager_t manager = {0};
+
+    assert(ccstring_new_add_ref(&manager, "one", 3) != NULL);
+    assert(ccstring_new_add_ref(&manager, "two", 3) != NULL);
+    assert(ccstring_new_add_ref(&manager, "three", 5) != NULL);
+    assert(manager.count == 3);
+
+    for (size_t i = 0; i < manager.count; i++) {
+        printf("Manager string %zu: %s\n", i, ccstring_get(manager.list[i]));
+    }
+
+    ccstring_manager_destroy(&manager);
+    assert(manager.list == NULL);
+    assert(manager.count == 0);
+    assert(manager.capacity == 0);
+}
+
+static void example_capacity_invariant(void)
+{
+    printf("------------------------------------------------------\n");
+
+    // capacity counts characters, not bytes allocated, so length never exceeds it.
+    ccstring_t* str = ccstring_new("Hello", 5);
+    assert(str != NULL);
+    assert(str->length == 5);
+    assert(str->length <= str->capacity);
+
+    // Repeated appends grow geometrically instead of reallocating every call.
+    size_t reallocations = 0;
+    size_t previous_capacity = str->capacity;
+
+    for (size_t i = 0; i < 1000; i++) {
+        assert(ccstring_append(&str, "x", 1) == 0);
+        assert(str->length <= str->capacity);
+
+        if (str->capacity != previous_capacity) {
+            reallocations++;
+            previous_capacity = str->capacity;
+        }
+    }
+
+    assert(ccstring_length(str) == 1005);
+    assert(reallocations < 20); // Doubling means ~log2(1005), not one per append
+
+    printf("1000 appends caused %zu reallocations, final capacity %zu\n",
+           reallocations, str->capacity);
+
+    ccstring_destroy(&str);
+}
+
 int main(void)
 {
     example_create_new_ccstring();
@@ -275,6 +402,10 @@ int main(void)
     example_append_ccstring();
     example_compare_ccstrings();
     example_manager_safe_use();
+    example_capacity_boundaries();
+    example_self_referencing_operations();
+    example_manager_zero_initialised();
+    example_capacity_invariant();
 
     return EXIT_SUCCESS;
 }

@@ -56,6 +56,7 @@ endif()
 # Include directories and compile features
 target_include_directories(ccstring PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/ccstring>
 )
 
@@ -65,6 +66,13 @@ if(CCSTRING_BUILD_TESTS)
     target_compile_options(ccstring_tests PRIVATE
         $<$<C_COMPILER_ID:MSVC>:/W4 /WX /GS /guard:cf>
         $<$<NOT:$<C_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -fstack-protector-strong>
+    )
+
+    # assert() is the test harness, so it has to survive a release build where
+    # CMake would otherwise define NDEBUG and compile every check away.
+    target_compile_options(ccstring_tests PRIVATE
+        $<$<C_COMPILER_ID:MSVC>:/UNDEBUG>
+        $<$<NOT:$<C_COMPILER_ID:MSVC>>:-UNDEBUG>
     )
     target_link_libraries(ccstring_tests PRIVATE ccstring)
 endif()
@@ -77,6 +85,12 @@ target_compile_options(ccstring PRIVATE
 
 # Export/import symbols correctly on Windows and keep the library build definition internal.
 target_compile_definitions(ccstring PRIVATE CCSTRING_BUILDING)
+
+# ccstring.h keys __declspec(dllexport/dllimport) off BUILD_SHARED_LIBS, so it has to
+# reach the preprocessor for the library and for consumers of the exported target.
+if(BUILD_SHARED_LIBS)
+    target_compile_definitions(ccstring PUBLIC BUILD_SHARED_LIBS)
+endif()
 
 set(CCSTRING_CMAKE_CONFIG_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/ccstring)
 

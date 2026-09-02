@@ -1,0 +1,136 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  sanitizers:
+    name: Linux ${{ matrix.cc }} (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - cc: gcc
+            name: asan+ubsan
+            flags: "-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all"
+          - cc: clang
+            name: asan+ubsan
+            flags: "-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all"
+          - cc: gcc
+            name: plain
+            flags: ""
+    env:
+      CC: ${{ matrix.cc }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: >
+          cmake -S . -B build
+          -DCMAKE_BUILD_TYPE=Debug
+          -DCCSTRING_BUILD_TESTS=ON
+          -DCMAKE_C_FLAGS="${{ matrix.flags }} -Werror"
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+  valgrind:
+    name: Linux valgrind
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install valgrind
+        run: sudo apt-get update && sudo apt-get install -y valgrind
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCCSTRING_BUILD_TESTS=ON
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      # Valgrind catches reads of uninitialised memory, which AddressSanitizer
+      # does not.
+      - name: Run tests under valgrind
+        run: >
+          valgrind --error-exitcode=1 --leak-check=full
+          --show-leak-kinds=all --track-origins=yes
+          ./build/ccstring_tests
+
+  windows:
+    name: Windows MSVC (${{ matrix.linkage }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - linkage: shared
+            shared: "ON"
+          - linkage: static
+            shared: "OFF"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: >
+          cmake -S . -B build
+          -DCCSTRING_BUILD_TESTS=ON
+          -DBUILD_SHARED_LIBS=${{ matrix.shared }}
+
+      - name: Build
+        run: cmake --build build --config Debug
+
+      - name: Test
+        run: ctest --test-dir build --build-config Debug --output-on-failure
+
+  install-and-consume:
+    name: Install and consume (${{ matrix.os }}, ${{ matrix.linkage }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Listed in full: two include entries both setting `linkage` would
+        # collide rather than multiply out against an `os` axis.
+        include:
+          - { os: ubuntu-latest,  linkage: shared, shared: "ON" }
+          - { os: ubuntu-latest,  linkage: static, shared: "OFF" }
+          - { os: windows-latest, linkage: shared, shared: "ON" }
+          - { os: windows-latest, linkage: static, shared: "OFF" }
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and install the library
+        shell: bash
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=${{ matrix.shared }} \
+            -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/stage"
+          cmake --build build --config Release
+          cmake --install build --config Release
+
+      # Proves the exported target, the installed include layout and the
+      # dllexport/dllimport wiring all work for a real consumer.
+      - name: Build the consumer test package
+        shell: bash
+        run: |
+          cmake -S test_package -B test_package/build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH="$GITHUB_WORKSPACE/stage"
+          cmake --build test_package/build --config Release
+
+      - name: Run the consumer
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            PATH="$GITHUB_WORKSPACE/stage/bin:$PATH" ./test_package/build/Release/test_package.exe
+          else
+            LD_LIBRARY_PATH="$GITHUB_WORKSPACE/stage/lib" ./test_package/build/test_package
+          fi

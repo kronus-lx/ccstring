@@ -35,13 +35,14 @@ If you are using a different triplet, update the `--triplet` value as needed.
 ```c
 #include "ccstring.h"
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 
 void creating_new_ccstring() {
     ccstring_t* str = ccstring_new("Hello, World!", 13);
     assert(str != NULL);
 
-    char* buffer = ccstring_get(str);
+    const char* buffer = ccstring_get(str);
     size_t length = ccstring_length(str);
 
     assert(buffer != NULL);
